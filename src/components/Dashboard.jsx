@@ -39,36 +39,27 @@ export default function Dashboard({ setActive }) {
       {/* Stat cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 20 }}>
         <StatCard icon={Truck}         label="Active Trucks"   value={inTransit}  sub="In transit now"  color="#2563EB" bg="#EFF6FF" />
-        <StatCard icon={AlertTriangle} label="Active Alerts"   value={alertCount} sub="Needs attention"  color="#DC2626" bg="#FEF2F2" />
+        <StatCard 
+          icon={AlertTriangle} 
+          label="Active Alerts"   
+          value={alertCount} 
+          sub="Needs attention"  
+          color="#DC2626" 
+          bg="#FEF2F2" 
+          onClick={() => setActive("alerts")}
+        />
         <StatCard icon={CheckCircle}   label="Delivered Today" value={delivered}  sub="On-time: 100%"   color="#16A34A" bg="#F0FDF4" />
         <StatCard icon={Package}       label="Goods Tracked"   value={totalGoods} sub="All shipments"   color="#7C3AED" bg="#F5F3FF" />
       </div>
 
-      {/* Map + Alerts */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 16, marginBottom: 16 }}>
+      {/* Map */}
+      <div style={{ marginBottom: 16 }}>
         <div style={{
           height: 390, borderRadius: 16, overflow: "hidden",
           boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
           border: "1px solid #E9EDF5",
         }}>
           <TruckMap selectedTruck={selectedTruck} onSelectTruck={setSelectedTruck} />
-        </div>
-
-        <div style={{
-          background: "#FFFFFF", border: "1px solid #E9EDF5",
-          borderRadius: 16, padding: 16, overflow: "auto",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-              <AlertTriangle size={15} color="#DC2626" />
-              <span style={{ color: "#111827", fontWeight: 700, fontSize: 14 }}>Recent Alerts</span>
-            </div>
-            <button onClick={() => setActive("alerts")} style={{
-              background: "none", border: "none", color: "#2563EB", fontSize: 12, cursor: "pointer", fontWeight: 500,
-            }}>View all →</button>
-          </div>
-          <AlertPanel compact />
         </div>
       </div>
 

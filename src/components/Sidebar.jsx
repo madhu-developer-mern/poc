@@ -7,14 +7,11 @@ const navItems = [
   { icon: MapPin,          label: "Live Tracking", id: "tracking"  },
   { icon: Truck,           label: "Trips",         id: "trips"     },
   { icon: History,         label: "History",       id: "history"   },
-  { icon: Bell,            label: "Alerts",        id: "alerts"    },
   { icon: BarChart2,       label: "IoT Analytics", id: "analytics" },
-  { icon: PlusCircle,      label: "Create Trip",   id: "create"    },
 ];
 
 export default function Sidebar({ active, setActive, onProfileClick }) {
   const [collapsed, setCollapsed] = useState(false);
-  const unread = ALERTS.filter((a) => !a.acknowledged).length;
 
   return (
     <aside style={{
@@ -59,7 +56,6 @@ export default function Sidebar({ active, setActive, onProfileClick }) {
       <nav style={{ flex: 1, padding: "12px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
         {navItems.map(({ icon: Icon, label, id }) => {
           const isActive = active === id;
-          const badge = id === "alerts" ? unread : 0;
           return (
             <button key={id} onClick={() => setActive(id)} style={{
               width: "100%", display: "flex", alignItems: "center", gap: 11,
@@ -76,20 +72,8 @@ export default function Sidebar({ active, setActive, onProfileClick }) {
               {!collapsed && (
                 <>
                   <span style={{ flex: 1, textAlign: "left" }}>{label}</span>
-                  {badge > 0 && (
-                    <span style={{
-                      background: "#EF4444", color: "#fff", borderRadius: 20,
-                      padding: "1px 7px", fontSize: 11, fontWeight: 700, lineHeight: 1.6,
-                    }}>{badge}</span>
-                  )}
                   {isActive && <ChevronRight size={14} style={{ opacity: 0.4 }} />}
                 </>
-              )}
-              {collapsed && badge > 0 && (
-                <span style={{
-                  position: "absolute", top: 6, right: 6,
-                  width: 8, height: 8, borderRadius: "50%", background: "#EF4444",
-                }} />
               )}
             </button>
           );
@@ -98,22 +82,15 @@ export default function Sidebar({ active, setActive, onProfileClick }) {
 
       {/* Bottom */}
       <div style={{ padding: "10px 10px 14px", borderTop: "1px solid #F1F5F9" }}>
-        <button style={{
-          width: "100%", display: "flex", alignItems: "center", gap: 11,
-          padding: "9px 13px", borderRadius: 10, border: "none", cursor: "pointer",
-          background: "transparent", color: "#9CA3AF", fontSize: 14,
-          justifyContent: collapsed ? "center" : "flex-start",
-        }}>
-          <Settings size={17} strokeWidth={1.8} />
-          {!collapsed && <span>Settings</span>}
-        </button>
         <div style={{ position: "relative", marginTop: 4 }}>
           <button
             style={{
               width: "100%", display: "flex", alignItems: "center", gap: 10,
               padding: "10px 13px",
-              background: "#F8FAFF", borderRadius: 10, border: "1px solid #EEF2FF",
+              background: active === "settings" ? "#F0F7FF" : "#F8FAFF", 
+              borderRadius: 10, border: `1px solid ${active === "settings" ? "#2563EB" : "#EEF2FF"}`,
               cursor: "pointer", justifyContent: collapsed ? "center" : "flex-start",
+              transition: "all 0.2s",
             }}
             onClick={() => {
               if (onProfileClick) onProfileClick();
@@ -126,11 +103,12 @@ export default function Sidebar({ active, setActive, onProfileClick }) {
               color: "#fff", fontWeight: 700, fontSize: 13,
             }}>M</div>
             {!collapsed && (
-              <div>
+              <div style={{ flex: 1, textAlign: "left" }}>
                 <div style={{ color: "#111827", fontSize: 13, fontWeight: 600 }}>Madhu B</div>
                 <div style={{ color: "#9CA3AF", fontSize: 11 }}>Fleet Manager</div>
               </div>
             )}
+            {!collapsed && active === "settings" && <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563EB" }} />}
           </button>
         </div>
       </div>

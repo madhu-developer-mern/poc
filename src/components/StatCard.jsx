@@ -1,13 +1,17 @@
-export default function StatCard({ icon: Icon, label, value, sub, color, bg }) {
+export default function StatCard({ icon: Icon, label, value, sub, color, bg, onClick }) {
   return (
-    <div style={{
-      background: "#FFFFFF",
-      border: "1px solid #E9EDF5",
-      borderRadius: 14,
-      padding: "18px 20px",
-      display: "flex", alignItems: "center", gap: 16,
-      boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-    }}>
+    <div 
+      onClick={onClick}
+      style={{
+        background: "#FFFFFF",
+        border: "1px solid #E9EDF5",
+        borderRadius: 14,
+        padding: "18px 20px",
+        display: "flex", alignItems: "center", gap: 16,
+        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+        cursor: onClick ? "pointer" : "default",
+      }}
+    >
       <div style={{
         width: 48, height: 48, borderRadius: 12, flexShrink: 0,
         background: bg || "rgba(37,99,235,0.1)",

@@ -10,7 +10,7 @@ const STATUS_CONFIG = {
   alert:      { color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", icon: AlertCircle,  label: "Alert"      },
 };
 
-export default function TripList({ onSelectTrip }) {
+export default function TripList({ onSelectTrip, setActive }) {
   const [filter, setFilter]         = useState("all");
   const [selectedTrip, setSelectedTrip] = useState(null);
 
@@ -23,7 +23,20 @@ export default function TripList({ onSelectTrip }) {
   return (
     <div style={{ padding: "20px 24px 24px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-        <h2 style={{ color: "#111827", fontSize: 18, fontWeight: 700, margin: 0 }}>All Trips</h2>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <h2 style={{ color: "#111827", fontSize: 18, fontWeight: 700, margin: 0 }}>All Trips</h2>
+          <button 
+            onClick={() => setActive && setActive("create")}
+            style={{
+              padding: "4px 10px", background: "#EEF2FF", border: "1px solid #E0E7FF",
+              borderRadius: 6, color: "#2563EB", fontSize: 11, fontWeight: 600,
+              cursor: "pointer", display: "flex", alignItems: "center", gap: 5,
+              transition: "all 0.2s"
+            }}
+          >
+            <span>+ Create New Trip</span>
+          </button>
+        </div>
         <div style={{ display: "flex", gap: 6 }}>
           {["all", "in_transit", "loading", "delivered", "alert"].map((s) => (
             <button

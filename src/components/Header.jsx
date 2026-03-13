@@ -1,7 +1,7 @@
 import { Bell, Search, RefreshCw } from "lucide-react";
 import { ALERTS } from "../data/mockData";
 
-export default function Header({ title, subtitle }) {
+export default function Header({ title, subtitle, setActive }) {
   const unread = ALERTS.filter((a) => !a.acknowledged).length;
 
   return (
@@ -45,19 +45,23 @@ export default function Header({ title, subtitle }) {
       </div>
 
       {/* Refresh */}
-      <button style={{
+      <button 
+        onClick={() => window.location.reload()}
+        style={{
         background: "#F4F6FB", border: "1px solid #E9EDF5", borderRadius: 10,
         padding: "8px 10px", cursor: "pointer", color: "#6B7280",
-        display: "flex", alignItems: "center",
+        display: "flex", alignItems: "center", transition: "all 0.2s"
       }}>
         <RefreshCw size={15} />
       </button>
 
       {/* Alerts */}
-      <button style={{
+      <button 
+        onClick={() => setActive("alerts")}
+        style={{
         position: "relative", background: "#F4F6FB", border: "1px solid #E9EDF5",
         borderRadius: 10, padding: "8px 10px", cursor: "pointer", color: "#6B7280",
-        display: "flex", alignItems: "center",
+        display: "flex", alignItems: "center", transition: "all 0.2s"
       }}>
         <Bell size={17} />
         {unread > 0 && (
