@@ -4,33 +4,26 @@
     "legalName": "FreightIQ Global Logistics Pvt Ltd",
     "domain": "freightiq.com",
     "email": "admin@freightiq.com",
-    "phone": "+1 (555) 000-1234",
-    "address": "123 Tech Park, Bangalore, India",
+    "phone": "+91 98765 43210",
+    "address": "Tech Park, Building 4, Whitefield, Bangalore",
     "status": "Active",
     "limits": {
       "devices": 500,
       "gateways": 100,
-      "tripsPerMonth": 5000
+      "tripsPerMonth": 1000
     }
   },
   "users": [
-    { "id": 1, "name": "Madhu B", "email": "madhu@freightiq.com", "role": "Admin", "status": "Active", "lastActive": "Just now" },
-    { "id": 2, "name": "Suresh Kumar", "email": "suresh@freightiq.com", "role": "Operations Manager", "status": "Active", "lastActive": "2h ago" },
-    { "id": 3, "name": "Anita Rao", "email": "anita@freightiq.com", "role": "Fleet Manager", "status": "Inactive", "lastActive": "3 days ago" },
-    { "id": 4, "name": "David Wilson", "email": "david@freightiq.com", "role": "Viewer", "status": "Active", "lastActive": "1d ago" },
-    { "id": 5, "name": "Priya Singh", "email": "priya@freightiq.com", "role": "Fleet Manager", "status": "Active", "lastActive": "5h ago" }
+    { "id": "USR001", "name": "Admin User", "role": "Administrator", "email": "admin@freightiq.com", "status": "Active", "lastSeen": "2 mins ago" },
+    { "id": "USR002", "name": "Operations Lead", "role": "Ops Manager", "email": "ops@freightiq.com", "status": "Active", "lastSeen": "1 hour ago" }
   ],
   "roles": [
-    { "id": "admin", "name": "Administrator", "desc": "Full access to all modules and settings", "users": 1, "permissions": ["org_edit", "user_manage", "role_manage", "trip_create", "trip_edit", "device_reg", "device_update", "reports_gen", "audit_view"] },
-    { "id": "ops", "name": "Operations Manager", "desc": "Manage trips, vehicles and users", "users": 4, "permissions": ["user_manage", "trip_create", "trip_edit", "reports_gen"] },
-    { "id": "fleet", "name": "Fleet Manager", "desc": "Monitor vehicles, devices and trip history", "users": 12, "permissions": ["trip_edit", "device_reg", "reports_gen"] },
-    { "id": "viewer", "name": "Viewer", "desc": "Read-only access to tracking and reports", "users": 5, "permissions": ["reports_gen", "audit_view"] }
+    { "id": "admin", "name": "Administrator", "desc": "Full system access", "users": 1, "permissions": ["org_edit", "user_manage", "role_manage", "trip_create", "trip_edit", "device_reg", "device_update", "reports_gen", "audit_view"] },
+    { "id": "ops", "name": "Operations Manager", "desc": "Manage fleet and users", "users": 5, "permissions": ["user_manage", "trip_create", "trip_edit", "device_reg", "reports_gen"] }
   ],
   "vehicles": [
-    { "id": "VEH-101", "plate": "KA-01-HH-1234", "model": "Tata Prima 4923", "status": "On Trip", "driver": "Rajesh Kumar", "location": "Bangalore" },
-    { "id": "VEH-102", "plate": "MH-02-AB-5678", "model": "Ashok Leyland 3518", "status": "Idle", "driver": "Suresh Mani", "location": "Mumbai" },
-    { "id": "VEH-103", "plate": "DL-01-XY-9012", "model": "BharatBenz 3723", "status": "Maintenance", "driver": "None", "location": "Delhi Workshop" },
-    { "id": "VEH-104", "plate": "TN-05-CD-3456", "model": "Tata Prima 4923", "status": "On Trip", "driver": "Anand R", "location": "Chennai" }
+    { "id": "V-1021", "vehicle": "Tata Prima - KA 01 HH 1234", "type": "Heavy Duty", "status": "In Transit", "location": "En Route (Mumbai)" },
+    { "id": "V-1022", "vehicle": "BharatBenz - MH 02 AB 5678", "type": "Multi-axle", "status": "Idle", "location": "Pune Hub" }
   ],
   "tripConfig": {
     "tempMin": 2.0,
@@ -43,11 +36,105 @@
     "deviationThreshold": 500
   },
   "devices": [
-    { "id": "TF10-7492-AX", "type": "TF10 Sensor", "status": "Active", "battery": 88, "lastSync": "12m ago", "assignedTo": "KA-01-HH-1234" },
-    { "id": "TF10-3122-BY", "type": "TF10 Sensor", "status": "Active", "battery": 72, "lastSync": "44m ago", "assignedTo": "MH-02-AB-5678" }
+    { "id": "TF10-8923", "type": "TF10 Sensor", "gateway": "GTW-201", "trip": "TRIP-240001", "battery": 88, "status": "Active", "firmware": "v2.4.1" },
+    { "id": "TF10-4421", "type": "TF10 Sensor", "gateway": "GTW-201", "trip": "TRIP-240001", "battery": 15, "status": "Low Battery", "firmware": "v2.4.1" }
   ],
   "gateways": [
-    { "id": "GW-9001", "status": "Online", "signal": "Strong", "firmware": "v2.1.4", "assignedTo": "KA-01-HH-1234" },
-    { "id": "GW-9002", "status": "Online", "signal": "Good", "firmware": "v2.1.4", "assignedTo": "MH-02-AB-5678" }
-  ]
+    { "id": "GTW-201", "assignedTo": "KA 01 HH 1234", "status": "Online", "signal": "Strong", "location": "Mumbai Highway", "firmware": "v1.2.0" }
+  ],
+  "trips": [
+    {
+      "id": "TRIP-240001",
+      "status": "in_transit",
+      "origin": "Mumbai Hub",
+      "destination": "Bangalore Depot",
+      "originCoords": { "lat": 19.076, "lng": 72.8777 },
+      "destCoords": { "lat": 12.9716, "lng": 77.5946 },
+      "startTime": "2024-03-13T10:00:00Z",
+      "eta": "2024-03-14T22:00:00Z",
+      "progress": 45,
+      "distance": 980,
+      "truckId": "TRK-001",
+      "driver": "Rajan Kumar",
+      "cargo": {
+        "type": "Pharmaceuticals",
+        "items": [
+          { "name": "Insulin Vials", "qty": "500 units", "weight": "200 kg", "tempSensitive": true }
+        ],
+        "limits": { "tempMin": 2, "tempMax": 8, "humMin": 30, "humMax": 60 }
+      },
+      "config": {
+        "samplingInterval": 15,
+        "uploadFrequency": 30,
+        "deviationTolerance": 500,
+        "maxStopDuration": 60
+      },
+      "assignment": {
+        "vehicle": "KA 01 HH 1234",
+        "gateway": "GTW-201",
+        "sensors": ["TF10-8923", "TF10-4421"]
+      },
+      "liveData": {
+        "currentLat": 16.5,
+        "currentLng": 74.5,
+        "temp": 4.2,
+        "humidity": 45,
+        "battery": 85,
+        "signal": 92
+      },
+      "events": [
+        { "time": "2024-03-13T10:00:00Z", "event": "Trip Started", "location": "Mumbai Hub", "type": "info" },
+        { "time": "2024-03-13T10:15:00Z", "event": "Cargo Loaded", "location": "Mumbai Hub", "type": "info" },
+        { "time": "2024-03-13T14:30:00Z", "event": "Stop Detected", "location": "Pune Expressway", "type": "warning" }
+      ],
+      "alerts": [
+        { "id": "ALT-001", "time": "2024-03-13T14:35:00Z", "message": "Long stop duration detected", "severity": "warning", "status": "active" }
+      ]
+    }
+  ],
+  "history": [
+    {
+      "id": "TRIP-239999",
+      "origin": "Delhi Hub",
+      "destination": "Mumbai Depot",
+      "startTime": "2024-03-10T08:00:00Z",
+      "endTime": "2024-03-12T04:00:00Z",
+      "status": "delivered",
+      "distance": 1400,
+      "avgTemp": 4.5,
+      "compliance": 98,
+      "cargo": "Ice Cream",
+      "events": [
+        { "time": "2024-03-10T08:00:00Z", "event": "Trip Started" },
+        { "time": "2024-03-12T04:00:00Z", "event": "Trip Ended" }
+      ]
+    }
+  ],
+  "analytics": {
+    "tempTrend": [
+      { "time": "00:00", "temp": 4.1 }, { "time": "04:00", "temp": 4.3 }, { "time": "08:00", "temp": 4.5 },
+      { "time": "12:00", "temp": 4.2 }, { "time": "16:00", "temp": 4.8 }, { "time": "20:00", "temp": 4.4 }
+    ],
+    "compStats": {
+      "overall": 96.5,
+      "byCargo": [
+        { "type": "Pharma", "score": 98.2 },
+        { "type": "Dairy", "score": 94.1 },
+        { "type": "Meat", "score": 95.8 }
+      ],
+      "byRoute": [
+        { "route": "MUM-BLR", "score": 97.5 },
+        { "route": "DEL-MUM", "score": 93.2 }
+      ]
+    },
+    "alertStats": {
+      "total": 142,
+      "types": [
+        { "type": "Temp Breach", "count": 64 },
+        { "type": "Offline", "count": 32 },
+        { "type": "Battery", "count": 18 },
+        { "type": "Deviation", "count": 28 }
+      ]
+    }
+  }
 }

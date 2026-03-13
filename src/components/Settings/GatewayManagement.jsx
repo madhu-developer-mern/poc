@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Network, Search, Plus, Signal, Activity, RefreshCw, Unplug, MapPin } from "lucide-react";
+import { Network, Search, Plus, Signal, Activity, RefreshCw, Unplug, MapPin, X } from "lucide-react";
 import { api } from "../../lib/api";
 
 export default function GatewayManagement() {
   const [gateways, setGateways] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchGateways();
@@ -15,7 +16,7 @@ export default function GatewayManagement() {
     setLoading(true);
     try {
       const data = await api.getCollection("gateways");
-      setGateways(data);
+      setGateways(data || []);
     } catch (err) {
       console.error("Failed to fetch gateways", err);
     } finally {
@@ -23,8 +24,18 @@ export default function GatewayManagement() {
     }
   };
 
-  const filteredGateways = gateways.filter(gtw => 
-    gtw.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const handleCreate = async (newData) => {
+    try {
+      await api.updateItem("gateways", { ...newData, status: "Online", signal: "Strong", firmware: "v1.0.0" });
+      fetchGateways();
+      setShowModal(false);
+    } catch (err) {
+      console.error("Failed to create gateway", err);
+    }
+  };
+
+  const filteredGateways = (gateways || []).filter(gtw => 
+    gtw.id?.toLowerCase().includes(searchTerm.toLowerCase()) || 
     (gtw.assignedTo && gtw.assignedTo.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -35,10 +46,13 @@ export default function GatewayManagement() {
           <h2 style={{ fontSize: 24, fontWeight: 700, color: "#1e293b" }}>Gateway Management</h2>
           <p style={{ color: "#64748b", marginTop: 4 }}>Manage and monitor the communication units installed in your fleet.</p>
         </div>
-        <button style={{ 
-          background: "#2563eb", color: "#fff", border: "none", padding: "10px 20px", 
-          borderRadius: 8, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 
-        }}>
+        <button 
+          onClick={() => setShowModal(true)}
+          style={{ 
+            background: "#2563eb", color: "#fff", border: "none", padding: "10px 20px", 
+            borderRadius: 8, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 
+          }}
+        >
           <Plus size={18} /> Register Gateway
         </button>
       </div>
@@ -93,7 +107,7 @@ export default function GatewayManagement() {
                         {[1, 2, 3, 4].map(idx => (
                           <div key={idx} style={{ 
                             width: 3, height: idx * 3, borderRadius: 1,
-                            background: (gtw.signal === 'Strong' ? 100 : gtw.signal === 'Good' ? 75 : 25) >= idx * 25 ? "#16a34a" : "#e2e8f0" 
+                            background: (gtw.signal === 'Strong' ? 100 : (gtw.signal === 'Good' ? 75 : 25)) >= idx * 25 ? "#16a34a" : "#e2e8f0" 
                           }} />
                         ))}
                       </div>
@@ -122,6 +136,10 @@ export default function GatewayManagement() {
           </table>
         )}
       </div>
+
+      {showModal && (
+        <RegisterModal onClose={() => setShowModal(false)} onSubmit={handleCreate} />
+      )}
     </div>
   );
 }
@@ -144,20 +162,38 @@ function GatewayCard({ label, value, sub, icon: Icon, color }) {
   );
 }
 
+function RegisterModal({ onClose, onSubmit }) {
+  const [formData, setFormData] = useState({ id: "", assignedTo: "" });
 
-function GatewayCard({ label, value, sub, icon: Icon, color }) {
   return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 24, display: "flex", gap: 20 }}>
-      <div style={{ 
-        width: 52, height: 52, borderRadius: 14, background: `${color}10`, 
-        display: "flex", alignItems: "center", justifyContent: "center", color: color, flexShrink: 0
-      }}>
-        <Icon size={24} />
-      </div>
-      <div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#1e293b", lineHeight: 1 }}>{value}</div>
-        <div style={{ fontSize: 14, color: "#64748b", fontWeight: 600, marginTop: 4 }}>{label}</div>
-        <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>{sub}</div>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+      <div style={{ background: "#fff", padding: 32, borderRadius: 16, width: 400 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+          <h3 style={{ margin: 0 }}>Register Gateway</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", cursor: "pointer" }}><X size={20} /></button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600 }}>Gateway ID</label>
+            <input 
+              type="text" placeholder="GTW-XXXX" style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #e2e8f0", marginTop: 4 }}
+              value={formData.id} onChange={e => setFormData({ ...formData, id: e.target.value })}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600 }}>Assign to Vehicle</label>
+            <input 
+              type="text" placeholder="MH 01 AB 1234" style={{ width: "100%", padding: 10, borderRadius: 8, border: "1px solid #e2e8f0", marginTop: 4 }}
+              value={formData.assignedTo} onChange={e => setFormData({ ...formData, assignedTo: e.target.value })}
+            />
+          </div>
+          <button 
+            onClick={() => onSubmit(formData)}
+            style={{ background: "#2563eb", color: "#fff", border: "none", padding: 12, borderRadius: 8, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+          >
+            Confirm Registration
+          </button>
+        </div>
       </div>
     </div>
   );

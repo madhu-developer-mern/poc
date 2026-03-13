@@ -146,23 +146,3 @@ function getStatusStyles(status) {
   return { bg: "#f1f5f9", text: "#475569" };
 }
 
-
-function FleetStat({ label, value, icon: Icon, color }) {
-  return (
-    <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: 24, display: "flex", alignItems: "center", gap: 20 }}>
-      <div style={{ width: 48, height: 48, borderRadius: 12, background: `${color}10`, display: "flex", alignItems: "center", justifyContent: "center", color: color }}>
-        <Icon size={24} />
-      </div>
-      <div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#1e293b" }}>{value}</div>
-        <div style={{ fontSize: 14, color: "#64748b", fontWeight: 500 }}>{label}</div>
-      </div>
-    </div>
-  );
-}
-
-function getStatusStyles(status) {
-  if (status === "On Trip") return { bg: "#eff6ff", text: "#2563eb" };
-  if (status === "Maintenance") return { bg: "#fef2f2", text: "#dc2626" };
-  return { bg: "#f1f5f9", text: "#475569" };
-}
