@@ -1,18 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, Search, Plus, Filter, MoreVertical, Mail, Shield, UserX, UserCheck, Key, Edit2, Trash2 } from "lucide-react";
-
-const MOCK_USERS = [
-  { id: 1, name: "Madhu B", email: "madhu@freightiq.com", role: "Admin", status: "Active", lastActive: "Just now" },
-  { id: 2, name: "Suresh Kumar", email: "suresh@freightiq.com", role: "Operations Manager", status: "Active", lastActive: "2h ago" },
-  { id: 3, name: "Anita Rao", email: "anita@freightiq.com", role: "Fleet Manager", status: "Inactive", lastActive: "3 days ago" },
-  { id: 4, name: "David Wilson", email: "david@freightiq.com", role: "Viewer", status: "Active", lastActive: "1d ago" },
-  { id: 5, name: "Priya Singh", email: "priya@freightiq.com", role: "Fleet Manager", status: "Active", lastActive: "5h ago" },
-];
+import { api } from "../../lib/api";
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [users, setUsers] = useState([]);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getCollection("users");
+      setUsers(data);
+    } catch (err) {
+      console.error("Failed to fetch users", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (confirm("Are you sure you want to delete this user?")) {
+      await api.deleteItem("users", id);
+      fetchUsers();
+    }
+  };
+
+  const toggleStatus = async (user) => {
+    const newStatus = user.status === "Active" ? "Inactive" : "Active";
+    await api.updateItem("users", { ...user, status: newStatus });
+    fetchUsers();
+  };
 
   const filteredUsers = users.filter(u => 
     u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -41,9 +64,9 @@ export default function UserManagement() {
       {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, marginBottom: 32 }}>
         <StatCard label="Total Users" value={users.length} icon={Users} color="#2563eb" />
-        <StatCard label="Active Now" value={3} icon={UserCheck} color="#16a34a" />
-        <StatCard label="Pending Invites" value={2} icon={Mail} color="#f59e0b" />
-        <StatCard label="Admins" value={1} icon={Shield} color="#7c3aed" />
+        <StatCard label="Active" value={users.filter(u => u.status === "Active").length} icon={UserCheck} color="#16a34a" />
+        <StatCard label="Pending" value={0} icon={Mail} color="#f59e0b" />
+        <StatCard label="Admins" value={users.filter(u => u.role === "Admin").length} icon={Shield} color="#7c3aed" />
       </div>
 
       {/* Filters & Table */}
@@ -70,60 +93,68 @@ export default function UserManagement() {
           </button>
         </div>
 
-        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
-          <thead>
-            <tr style={{ background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
-              <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>User</th>
-              <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>Role</th>
-              <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>Status</th>
-              <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>Last Active</th>
-              <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", textAlign: "right" }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user) => (
-              <tr key={user.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "background 0.2s" }}>
-                <td style={{ padding: "16px 20px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{ 
-                      width: 36, height: 36, borderRadius: "50%", background: "#eff6ff", 
-                      color: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14
-                    }}>{user.name.charAt(0)}</div>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b" }}>{user.name}</div>
-                      <div style={{ fontSize: 12, color: "#64748b" }}>{user.email}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ padding: "16px 20px" }}>
-                  <div style={{ fontSize: 13, color: "#475569" }}>{user.role}</div>
-                </td>
-                <td style={{ padding: "16px 20px" }}>
-                  <span style={{ 
-                    padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
-                    background: user.status === "Active" ? "#f0fdf4" : "#fef2f2",
-                    color: user.status === "Active" ? "#16a34a" : "#dc2626"
-                  }}>
-                    {user.status}
-                  </span>
-                </td>
-                <td style={{ padding: "16px 20px" }}>
-                  <div style={{ fontSize: 13, color: "#64748b" }}>{user.lastActive}</div>
-                </td>
-                <td style={{ padding: "16px 20px", textAlign: "right" }}>
-                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                    <ActionButton icon={Edit2} tooltip="Edit Profile" />
-                    <ActionButton icon={Key} tooltip="Reset Password" />
-                    <ActionButton icon={user.status === "Active" ? UserX : UserCheck} tooltip={user.status === "Active" ? "Deactivate" : "Activate"} />
-                    <ActionButton icon={Trash2} tooltip="Delete" danger />
-                  </div>
-                </td>
+        {loading ? (
+          <div style={{ padding: 40, textAlign: "center", color: "#64748b" }}>Loading users...</div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+            <thead>
+              <tr style={{ background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
+                <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>User</th>
+                <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>Role</th>
+                <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>Status</th>
+                <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase" }}>Last Active</th>
+                <th style={{ padding: "14px 20px", fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", textAlign: "right" }}>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user) => (
+                <tr key={user.id} style={{ borderBottom: "1px solid #f1f5f9", transition: "background 0.2s" }}>
+                  <td style={{ padding: "16px 20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ 
+                        width: 36, height: 36, borderRadius: "50%", background: "#eff6ff", 
+                        color: "#2563eb", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 14
+                      }}>{user.name.charAt(0)}</div>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: "#1e293b" }}>{user.name}</div>
+                        <div style={{ fontSize: 12, color: "#64748b" }}>{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td style={{ padding: "16px 20px" }}>
+                    <div style={{ fontSize: 13, color: "#475569" }}>{user.role}</div>
+                  </td>
+                  <td style={{ padding: "16px 20px" }}>
+                    <span style={{ 
+                      padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600,
+                      background: user.status === "Active" ? "#f0fdf4" : "#fef2f2",
+                      color: user.status === "Active" ? "#16a34a" : "#dc2626"
+                    }}>
+                      {user.status}
+                    </span>
+                  </td>
+                  <td style={{ padding: "16px 20px" }}>
+                    <div style={{ fontSize: 13, color: "#64748b" }}>{user.lastActive}</div>
+                  </td>
+                  <td style={{ padding: "16px 20px", textAlign: "right" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                      <ActionButton icon={Edit2} tooltip="Edit Profile" />
+                      <ActionButton icon={Key} tooltip="Reset Password" />
+                      <ActionButton 
+                        icon={user.status === "Active" ? UserX : UserCheck} 
+                        tooltip={user.status === "Active" ? "Deactivate" : "Activate"} 
+                        onClick={() => toggleStatus(user)}
+                      />
+                      <ActionButton icon={Trash2} tooltip="Delete" danger onClick={() => handleDelete(user.id)} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
-        {filteredUsers.length === 0 && (
+        {!loading && filteredUsers.length === 0 && (
           <div style={{ padding: 60, textAlign: "center", color: "#94a3b8" }}>
             <Users size={48} strokeWidth={1} style={{ margin: "0 auto 16px" }} />
             <p>No users found matching your search.</p>
@@ -132,7 +163,14 @@ export default function UserManagement() {
       </div>
 
       {showInviteModal && (
-        <InviteModal onClose={() => setShowInviteModal(false)} />
+        <InviteModal 
+          onClose={() => setShowInviteModal(false)} 
+          onInvite={async (newUser) => {
+            await api.updateItem("users", { ...newUser, status: "Active", lastActive: "Pending" });
+            fetchUsers();
+            setShowInviteModal(false);
+          }}
+        />
       )}
     </div>
   );
@@ -155,10 +193,11 @@ function StatCard({ label, value, icon: Icon, color }) {
   );
 }
 
-function ActionButton({ icon: Icon, danger, tooltip }) {
+function ActionButton({ icon: Icon, danger, tooltip, onClick }) {
   return (
     <button 
       title={tooltip}
+      onClick={onClick}
       style={{ 
         width: 32, height: 32, borderRadius: 6, border: "1px solid #f1f5f9", background: "#fff",
         display: "flex", alignItems: "center", justifyContent: "center", color: danger ? "#dc2626" : "#64748b",
@@ -172,7 +211,9 @@ function ActionButton({ icon: Icon, danger, tooltip }) {
   );
 }
 
-function InviteModal({ onClose }) {
+function InviteModal({ onClose, onInvite }) {
+  const [formData, setFormData] = useState({ name: "", email: "", role: "Viewer" });
+
   return (
     <div style={{ 
       position: "fixed", top: 0, left: 0, width: "100%", height: "100%", 
@@ -187,13 +228,34 @@ function InviteModal({ onClose }) {
         
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ fontSize: 13, fontWeight: 500, color: "#475569" }}>Full Name</label>
+            <input 
+              type="text" 
+              placeholder="John Doe" 
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 14 }} 
+            />
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <label style={{ fontSize: 13, fontWeight: 500, color: "#475569" }}>Email Address</label>
-            <input type="email" placeholder="name@company.com" style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 14 }} />
+            <input 
+              type="email" 
+              placeholder="name@company.com" 
+              value={formData.email}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 14 }} 
+            />
           </div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <label style={{ fontSize: 13, fontWeight: 500, color: "#475569" }}>Assigned Role</label>
-            <select style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 14 }}>
+            <select 
+              value={formData.role}
+              onChange={e => setFormData({ ...formData, role: e.target.value })}
+              style={{ padding: "10px 12px", borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 14 }}
+            >
               <option>Admin</option>
               <option>Operations Manager</option>
               <option>Fleet Manager</option>
@@ -211,7 +273,7 @@ function InviteModal({ onClose }) {
           </button>
           <button 
             style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: "#2563eb", color: "#fff", fontWeight: 600, cursor: "pointer" }}
-            onClick={onClose}
+            onClick={() => onInvite(formData)}
           >
             Send Invite
           </button>
@@ -220,3 +282,4 @@ function InviteModal({ onClose }) {
     </div>
   );
 }
+

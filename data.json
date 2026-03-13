@@ -1,0 +1,53 @@
+{
+  "organization": {
+    "name": "FreightIQ Solutions",
+    "legalName": "FreightIQ Global Logistics Pvt Ltd",
+    "domain": "freightiq.com",
+    "email": "admin@freightiq.com",
+    "phone": "+1 (555) 000-1234",
+    "address": "123 Tech Park, Bangalore, India",
+    "status": "Active",
+    "limits": {
+      "devices": 500,
+      "gateways": 100,
+      "tripsPerMonth": 5000
+    }
+  },
+  "users": [
+    { "id": 1, "name": "Madhu B", "email": "madhu@freightiq.com", "role": "Admin", "status": "Active", "lastActive": "Just now" },
+    { "id": 2, "name": "Suresh Kumar", "email": "suresh@freightiq.com", "role": "Operations Manager", "status": "Active", "lastActive": "2h ago" },
+    { "id": 3, "name": "Anita Rao", "email": "anita@freightiq.com", "role": "Fleet Manager", "status": "Inactive", "lastActive": "3 days ago" },
+    { "id": 4, "name": "David Wilson", "email": "david@freightiq.com", "role": "Viewer", "status": "Active", "lastActive": "1d ago" },
+    { "id": 5, "name": "Priya Singh", "email": "priya@freightiq.com", "role": "Fleet Manager", "status": "Active", "lastActive": "5h ago" }
+  ],
+  "roles": [
+    { "id": "admin", "name": "Administrator", "desc": "Full access to all modules and settings", "users": 1, "permissions": ["org_edit", "user_manage", "role_manage", "trip_create", "trip_edit", "device_reg", "device_update", "reports_gen", "audit_view"] },
+    { "id": "ops", "name": "Operations Manager", "desc": "Manage trips, vehicles and users", "users": 4, "permissions": ["user_manage", "trip_create", "trip_edit", "reports_gen"] },
+    { "id": "fleet", "name": "Fleet Manager", "desc": "Monitor vehicles, devices and trip history", "users": 12, "permissions": ["trip_edit", "device_reg", "reports_gen"] },
+    { "id": "viewer", "name": "Viewer", "desc": "Read-only access to tracking and reports", "users": 5, "permissions": ["reports_gen", "audit_view"] }
+  ],
+  "vehicles": [
+    { "id": "VEH-101", "plate": "KA-01-HH-1234", "model": "Tata Prima 4923", "status": "On Trip", "driver": "Rajesh Kumar", "location": "Bangalore" },
+    { "id": "VEH-102", "plate": "MH-02-AB-5678", "model": "Ashok Leyland 3518", "status": "Idle", "driver": "Suresh Mani", "location": "Mumbai" },
+    { "id": "VEH-103", "plate": "DL-01-XY-9012", "model": "BharatBenz 3723", "status": "Maintenance", "driver": "None", "location": "Delhi Workshop" },
+    { "id": "VEH-104", "plate": "TN-05-CD-3456", "model": "Tata Prima 4923", "status": "On Trip", "driver": "Anand R", "location": "Chennai" }
+  ],
+  "tripConfig": {
+    "tempMin": 2.0,
+    "tempMax": 8.0,
+    "humMin": 30,
+    "humMax": 60,
+    "samplingInterval": 15,
+    "uploadFrequency": 30,
+    "stopDurationLimit": 45,
+    "deviationThreshold": 500
+  },
+  "devices": [
+    { "id": "TF10-7492-AX", "type": "TF10 Sensor", "status": "Active", "battery": 88, "lastSync": "12m ago", "assignedTo": "KA-01-HH-1234" },
+    { "id": "TF10-3122-BY", "type": "TF10 Sensor", "status": "Active", "battery": 72, "lastSync": "44m ago", "assignedTo": "MH-02-AB-5678" }
+  ],
+  "gateways": [
+    { "id": "GW-9001", "status": "Online", "signal": "Strong", "firmware": "v2.1.4", "assignedTo": "KA-01-HH-1234" },
+    { "id": "GW-9002", "status": "Online", "signal": "Good", "firmware": "v2.1.4", "assignedTo": "MH-02-AB-5678" }
+  ]
+}

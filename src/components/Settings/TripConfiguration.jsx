@@ -1,17 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Settings2, Thermometer, Droplets, Clock, Zap, MapPin, Save, AlertTriangle } from "lucide-react";
+import { api } from "../../lib/api";
 
 export default function TripConfiguration() {
   const [config, setConfig] = useState({
-    tempMin: 2.0,
-    tempMax: 8.0,
-    humMin: 30,
-    humMax: 60,
-    samplingInterval: 15,
-    uploadFrequency: 30,
-    stopDurationLimit: 45,
-    deviationThreshold: 500
+    tempMin: 0,
+    tempMax: 0,
+    humMin: 0,
+    humMax: 0,
+    samplingInterval: 0,
+    uploadFrequency: 0,
+    stopDurationLimit: 0,
+    deviationThreshold: 0
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
+  const fetchConfig = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getCollection("tripConfig");
+      setConfig(data);
+    } catch (err) {
+      console.error("Failed to fetch trip config", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.updateCollection("tripConfig", config);
+      alert("Configurations saved successfully!");
+    } catch (err) {
+      console.error("Failed to save config", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Loading configuration...</div>;
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -20,11 +53,16 @@ export default function TripConfiguration() {
           <h2 style={{ fontSize: 24, fontWeight: 700, color: "#1e293b" }}>Trip Configuration</h2>
           <p style={{ color: "#64748b", marginTop: 4 }}>Define global default parameters and monitoring rules for all trips.</p>
         </div>
-        <button style={{ 
-          background: "#2563eb", color: "#fff", border: "none", padding: "10px 24px", 
-          borderRadius: 8, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 
-        }}>
-          <Save size={18} /> Save Configurations
+        <button 
+          onClick={handleSave}
+          disabled={saving}
+          style={{ 
+            background: "#2563eb", color: "#fff", border: "none", padding: "10px 24px", 
+            borderRadius: 8, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
+            opacity: saving ? 0.7 : 1
+          }}
+        >
+          {saving ? "Saving..." : <><Save size={18} /> Save Configurations</>}
         </button>
       </div>
 
@@ -171,3 +209,4 @@ function RangeInput({ label, value, min, max, unit, desc, onChange }) {
     </div>
   );
 }
+

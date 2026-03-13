@@ -1,12 +1,6 @@
-import { useState } from "react";
-import { ShieldCheck, Plus, Check, Info, Lock, Eye, Edit2, ShieldAlert } from "lucide-react";
-
-const ROLES = [
-  { id: "admin", name: "Administrator", desc: "Full access to all modules and settings", users: 1 },
-  { id: "ops", name: "Operations Manager", desc: "Manage trips, vehicles and users", users: 4 },
-  { id: "fleet", name: "Fleet Manager", desc: "Monitor vehicles, devices and trip history", users: 12 },
-  { id: "viewer", name: "Viewer", desc: "Read-only access to tracking and reports", users: 5 },
-];
+import { useState, useEffect } from "react";
+import { Plus, Check } from "lucide-react";
+import { api } from "../../lib/api";
 
 const PERMISSIONS = [
   { id: "org_edit", label: "Edit Organization", category: "System" },
@@ -21,7 +15,52 @@ const PERMISSIONS = [
 ];
 
 export default function RolePermissionManagement() {
-  const [selectedRole, setSelectedRole] = useState(ROLES[0]);
+  const [roles, setRoles] = useState([]);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
+
+  const fetchRoles = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getCollection("roles");
+      setRoles(data);
+      if (data.length > 0) setSelectedRole(data[0]);
+    } catch (err) {
+      console.error("Failed to fetch roles", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSavePermissions = async () => {
+    setSaving(true);
+    try {
+      const updatedRoles = roles.map(r => r.id === selectedRole.id ? selectedRole : r);
+      await api.updateCollection("roles", updatedRoles);
+      setRoles(updatedRoles);
+      alert("Permissions saved successfully!");
+    } catch (err) {
+      console.error("Failed to save roles", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const togglePermission = (permId) => {
+    const hasPerm = selectedRole.permissions.includes(permId);
+    const newPerms = hasPerm 
+      ? selectedRole.permissions.filter(p => p !== permId)
+      : [...selectedRole.permissions, permId];
+    
+    setSelectedRole({ ...selectedRole, permissions: newPerms });
+  };
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Loading roles...</div>;
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -41,14 +80,14 @@ export default function RolePermissionManagement() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 32 }}>
         {/* Roles List */}
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {ROLES.map((role) => (
+          {roles.map((role) => (
             <button
               key={role.id}
               onClick={() => setSelectedRole(role)}
               style={{
                 textAlign: "left", padding: 20, borderRadius: 12, border: "1px solid",
-                borderColor: selectedRole.id === role.id ? "#2563eb" : "#e2e8f0",
-                background: selectedRole.id === role.id ? "#f0f7ff" : "#fff",
+                borderColor: selectedRole?.id === role.id ? "#2563eb" : "#e2e8f0",
+                background: selectedRole?.id === role.id ? "#f0f7ff" : "#fff",
                 cursor: "pointer", transition: "all 0.2s"
               }}
             >
@@ -62,48 +101,60 @@ export default function RolePermissionManagement() {
         </div>
 
         {/* Permissions Matrix */}
-        <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
-          <div style={{ padding: 24, borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1e293b" }}>{selectedRole.name} Permissions</h3>
-              <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Configure what this role can see and do.</p>
+        {selectedRole && (
+          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, overflow: "hidden" }}>
+            <div style={{ padding: 24, borderBottom: "1px solid #f1f5f9", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, color: "#1e293b" }}>{selectedRole.name} Permissions</h3>
+                <p style={{ fontSize: 13, color: "#64748b", marginTop: 4 }}>Configure what this role can see and do.</p>
+              </div>
             </div>
-            <button style={{ background: "#f1f5f9", color: "#475569", border: "none", padding: "8px 16px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-              Duplicate Role
-            </button>
-          </div>
 
-          <div style={{ padding: 24 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-              {["System", "Users", "Fleet", "Devices", "Reporting"].map((category) => (
-                <div key={category}>
-                  <h4 style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 16 }}>{category}</h4>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                    {PERMISSIONS.filter(p => p.category === category).map(perm => (
-                      <PermissionItem key={perm.id} label={perm.label} />
-                    ))}
+            <div style={{ padding: 24 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+                {["System", "Users", "Fleet", "Devices", "Reporting"].map((category) => (
+                  <div key={category}>
+                    <h4 style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 16 }}>{category}</h4>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      {PERMISSIONS.filter(p => p.category === category).map(perm => (
+                        <PermissionItem 
+                          key={perm.id} 
+                          label={perm.label} 
+                          enabled={selectedRole.permissions.includes(perm.id)}
+                          onToggle={() => togglePermission(perm.id)}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            <div style={{ padding: 20, background: "#f8fafc", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+              <button style={{ background: "transparent", border: "none", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Reset to Default</button>
+              <button 
+                onClick={handleSavePermissions}
+                disabled={saving}
+                style={{ 
+                  background: "#2563eb", color: "#fff", border: "none", padding: "8px 24px", 
+                  borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer",
+                  opacity: saving ? 0.7 : 1
+                }}
+              >
+                {saving ? "Saving..." : "Save Permissions"}
+              </button>
             </div>
           </div>
-
-          <div style={{ padding: 20, background: "#f8fafc", borderTop: "1px solid #f1f5f9", display: "flex", justifyContent: "flex-end", gap: 12 }}>
-            <button style={{ background: "transparent", border: "none", color: "#64748b", fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Reset to Default</button>
-            <button style={{ background: "#2563eb", color: "#fff", border: "none", padding: "8px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer" }}>Save Permissions</button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
-function PermissionItem({ label }) {
-  const [enabled, setEnabled] = useState(true);
-
+function PermissionItem({ label, enabled, onToggle }) {
   return (
     <div 
-      onClick={() => setEnabled(!enabled)}
+      onClick={onToggle}
       style={{ 
         display: "flex", alignItems: "center", gap: 12, cursor: "pointer", 
         padding: "10px 12px", borderRadius: 8, border: "1px solid #f1f5f9",
@@ -122,3 +173,4 @@ function PermissionItem({ label }) {
     </div>
   );
 }
+

@@ -1,33 +1,57 @@
-import { useState } from "react";
-import { Building2, Save, Globe, Phone, Mail, MapPin, CheckCircle2, AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Building2, Save, Globe, Phone, Mail, MapPin, CheckCircle2 } from "lucide-react";
+import { api } from "../../lib/api";
 
 export default function OrganizationSettings() {
   const [orgData, setOrgData] = useState({
-    name: "FreightIQ Solutions",
-    legalName: "FreightIQ Global Logistics Pvt Ltd",
-    domain: "freightiq.com",
-    email: "admin@freightiq.com",
-    phone: "+1 (555) 000-1234",
-    address: "123 Tech Park, Bangalore, India",
-    status: "Active",
+    name: "",
+    legalName: "",
+    domain: "",
+    email: "",
+    phone: "",
+    address: "",
+    status: "",
     limits: {
-      devices: 500,
-      gateways: 100,
-      tripsPerMonth: 5000
+      devices: 0,
+      gateways: 0,
+      tripsPerMonth: 0
     }
   });
 
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleSave = () => {
+  useEffect(() => {
+    fetchOrgData();
+  }, []);
+
+  const fetchOrgData = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getCollection("organization");
+      setOrgData(data);
+    } catch (err) {
+      console.error("Failed to fetch org data", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
     setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+    try {
+      await api.updateCollection("organization", orgData);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-    }, 1000);
+    } catch (err) {
+      console.error("Failed to save org data", err);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) return <div style={{ padding: 40, textAlign: "center" }}>Loading organization details...</div>;
 
   return (
     <div style={{ padding: "32px 40px" }}>
@@ -156,3 +180,4 @@ function LimitCard({ label, current, limit }) {
     </div>
   );
 }
+
