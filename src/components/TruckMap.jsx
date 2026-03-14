@@ -211,44 +211,38 @@ function renderTruckMarkerRoot(root, { rotationDeg, size = 46 }) {
         style={{
           width: size,
           height: size,
-          transform: `rotate(${rotationDeg}deg)`,
           transformOrigin: "center center",
           filter: "drop-shadow(0 4px 8px rgba(15,23,42,0.18))",
         }}
       >
-        <ThreeTruckIcon size={size} />
+        <ThreeTruckIcon size={size} rotation={rotationDeg} />
       </div>
     </Suspense>
   );
 }
 
 function svgToDataUrl(svg) {
-  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  // Use base64 for maximum compatibility in Data URLs
+  const base64 = btoa(unescape(encodeURIComponent(svg)));
+  return `data:image/svg+xml;base64,${base64}`;
 }
 
-function getFallbackTruckMarkerIcon({ rotationDeg, size = 44 }) {
+function getFallbackTruckMarkerIcon({ rotationDeg, size = 48 }) {
+  // Simplified SVG without complex defs for maximum robustness in legacy Markers
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" fill="none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
       <g transform="rotate(${rotationDeg} 32 32)">
-        <ellipse cx="32" cy="55" rx="12" ry="4" fill="rgba(15,23,42,0.14)" />
-        <rect x="22" y="18" width="20" height="28" rx="3.5" fill="#e8a04c" />
-        <rect x="23" y="19.5" width="18" height="2.2" rx="1.1" fill="#c47a28" />
-        <rect x="23" y="24" width="18" height="1.8" rx="0.9" fill="rgba(255,255,255,0.18)" />
-        <rect x="23" y="29" width="18" height="1.8" rx="0.9" fill="rgba(255,255,255,0.16)" />
-        <rect x="23" y="34" width="18" height="1.8" rx="0.9" fill="rgba(255,255,255,0.14)" />
-        <rect x="20.5" y="8" width="23" height="15" rx="5" fill="#2d2d3a" />
-        <rect x="24" y="10.5" width="16" height="6.2" rx="2.2" fill="#5a8a9a" fill-opacity="0.76" />
-        <rect x="21" y="46" width="22" height="4" rx="2" fill="#2d2d3a" />
-        <rect x="18" y="12" width="3" height="8" rx="1.5" fill="#d8d8e0" fill-opacity="0.9" />
-        <rect x="43" y="12" width="3" height="8" rx="1.5" fill="#555560" />
-        <rect x="16" y="13" width="6" height="9" rx="2.6" fill="#111118" />
-        <rect x="42" y="13" width="6" height="9" rx="2.6" fill="#111118" />
-        <rect x="16" y="40" width="6" height="9" rx="2.6" fill="#111118" />
-        <rect x="42" y="40" width="6" height="9" rx="2.6" fill="#111118" />
-        <circle cx="19" cy="17.5" r="1.8" fill="#b8b8c0" />
-        <circle cx="45" cy="17.5" r="1.8" fill="#b8b8c0" />
-        <circle cx="19" cy="44.5" r="1.8" fill="#b8b8c0" />
-        <circle cx="45" cy="44.5" r="1.8" fill="#b8b8c0" />
+        <ellipse cx="32" cy="56" rx="14" ry="5" fill="rgba(0,0,0,0.12)" />
+        <rect x="20" y="44" width="24" height="6" rx="2" fill="#1e293b" />
+        <rect x="21" y="16" width="22" height="32" rx="2" fill="#f8fafc" />
+        <rect x="18" y="4" width="28" height="15" rx="5" fill="#2563eb" />
+        <rect x="20" y="6" width="24" height="9" rx="2" fill="#ffffff" opacity="0.3" />
+        <circle cx="21" cy="16" r="1.5" fill="#ffffff" />
+        <circle cx="43" cy="16" r="1.5" fill="#ffffff" />
+        <rect x="17" y="10" width="4.5" height="9" rx="2.2" fill="#0f172a" />
+        <rect x="42.5" y="10" width="4.5" height="9" rx="2.2" fill="#0f172a" />
+        <rect x="17" y="38" width="4.5" height="9" rx="2.2" fill="#0f172a" />
+        <rect x="42.5" y="38" width="4.5" height="9" rx="2.2" fill="#0f172a" />
       </g>
     </svg>
   `;
@@ -335,19 +329,34 @@ function TruckMarker({ truck, isSelected, onClick, position, rotation }) {
             pointerEvents: "none",
           }} />
         )}
-        {/* Selected truck gets the real 3D render. */}
+        {/* Render the high-fidelity 3D model ONLY for the selected truck. */}
+        {/* For others, use a lightweight SVG to save WebGL contexts and boost performance. */}
         <div
           style={{
             width: markerSize,
             height: markerSize,
-            transform: `rotate(${rotation}deg)`,
             transformOrigin: "center center",
             filter: "drop-shadow(0 6px 10px rgba(15,23,42,0.20))",
           }}
         >
-          <Suspense fallback={<div style={{ width: markerSize, height: markerSize }} />}>
-            <ThreeTruckIcon size={markerSize} />
-          </Suspense>
+          {isSelected ? (
+            <Suspense fallback={<div style={{ width: markerSize, height: markerSize }} />}>
+              <ThreeTruckIcon size={markerSize} rotation={rotation} />
+            </Suspense>
+          ) : (
+            <div 
+              style={{ width: "100%", height: "100%" }}
+              dangerouslySetInnerHTML={{ __html: `
+                <svg xmlns="http://www.w3.org/2000/svg" width="${markerSize}" height="${markerSize}" viewBox="0 0 64 64">
+                  <g transform="rotate(${rotation} 32 32)">
+                    <rect x="21" y="16" width="22" height="32" rx="2" fill="#f8fafc" />
+                    <rect x="18" y="4" width="28" height="15" rx="5" fill="#2563eb" />
+                    <rect x="20" y="6" width="24" height="9" rx="2" fill="#ffffff" opacity="0.3" />
+                  </g>
+                </svg>
+              `}} 
+            />
+          )}
         </div>
         {/* Keep badges on the selected truck only to avoid map clutter. */}
         {isSelected && truck.speed > 0 && (
@@ -417,8 +426,8 @@ function TruckInfoCard({ truck, trip, onClose }) {
       <div style={{ padding: 16 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <TruckSVG color={color} size={22} />
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: bg, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+              <ThreeTruckIcon size={40} />
             </div>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
